@@ -9,8 +9,8 @@ export default function NotePreviewModalClient({ note }: { note: Note }) {
   const router = useRouter();
 
   return (
-    <Modal isOpen={true} onClose={() => router.back()}>
-      <NotePreview note={note} />
+    <Modal open={true} onClose={() => router.back()}>
+      <NotePreview note={note} onBack={() => router.back()} />
     </Modal>
   );
 }
