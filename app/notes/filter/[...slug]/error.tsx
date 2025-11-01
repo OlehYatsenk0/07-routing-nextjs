@@ -1,10 +1,5 @@
 "use client";
 
 export default function Error({ error }: { error: Error }) {
-  return (
-    <div style={{ padding: "20px" }}>
-      <h2>Something went wrong</h2>
-      <p>{error.message}</p>
-    </div>
-  );
+  return <p>Could not fetch the list of notes. {error.message}</p>;
 }

@@ -1,67 +1,112 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { fetchNotes } from "@/lib/api";
-import NoteList from "@/components/NoteList/NoteList";
+import { useEffect, useState } from "react";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import {
+  fetchNotes,
+  createNote,
+  type PaginatedNotesResponse,
+  type CreateNotePayload,
+} from "@/lib/api";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
-import CreateNote from "@/components/CreateNote/CreateNote";
-import css from "./Notes.module.css";
+import NoteList from "@/components/NoteList/NoteList";
+import Modal from "@/components/Modal/Modal";
+import NoteForm from "@/components/NoteForm/NoteForm";
+import css from "./NotesPage.module.css";
 
-export default function NotesClient({ tag }: { tag?: string }) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+export default function NotesClient({ tag }: { tag: string | null }) {
+  const qc = useQueryClient();
 
-  
-  const page = Number(searchParams.get("page") ?? 1);
-  const search = searchParams.get("search") ?? "";
-
-  
-  const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams(searchParams);
-    params.set("page", String(newPage));
-    router.push(`?${params.toString()}`);
-  };
+  const [search, setSearch] = useState("");
+  const [debouncedQ, setDebouncedQ] = useState("");
+  const [page, setPage] = useState(1);
+  const [isCreateOpen, setCreateOpen] = useState(false);
 
   
-  const handleSearch = (query: string) => {
-    const params = new URLSearchParams(searchParams);
-    if (query) params.set("search", query);
-    else params.delete("search");
-    params.set("page", "1");
-    router.push(`?${params.toString()}`);
-  };
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedQ(search.trim());
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  const { data, isLoading, error, isFetching } =
+    useQuery<PaginatedNotesResponse>({
+      queryKey: ["notes", { q: debouncedQ, page, tag: tag ?? "" }],
+      queryFn: () => fetchNotes({ q: debouncedQ, page, tag: tag ?? undefined }),
+      placeholderData: keepPreviousData,
+      refetchOnWindowFocus: false,
+    });
 
   
-  const {
-    data,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["notes", { page, search, tag }],
-    queryFn: () => fetchNotes({ page, search, tag }),
+  const create = useMutation({
+    mutationFn: (payload: CreateNotePayload) => createNote(payload),
+    onSuccess: () => {
+      setCreateOpen(false);
+      qc.invalidateQueries({ queryKey: ["notes"] });
+    },
   });
 
-  if (isLoading) return <p>Loading notes...</p>;
-  if (isError) return <p>Error loading notes.</p>;
-  if (!data?.notes?.length) return <p>No notes found.</p>;
+  if (isLoading) return <p>Loading, please wait...</p>;
+  if (error)
+    return <p>Could not fetch the list of notes. {(error as Error).message}</p>;
+
+  const notes = data?.notes ?? [];
+  const totalPages = data?.totalPages ?? 1;
 
   return (
-    <div className={css.wrapper}>
-      <div className={css.topRow}>
-        <SearchBox onSearch={handleSearch} />
-        <CreateNote />
+    <div className={css.app}>
+      <div className={css.toolbar}>
+        <div style={{ flex: "1 1 520px", maxWidth: 520 }}>
+          <SearchBox onSearch={(query) => setSearch(query)} />
+        </div>
+        <button
+          type="button"
+          className={css.button}
+          onClick={() => setCreateOpen(true)}
+        >
+          Create note
+        </button>
       </div>
 
-      <NoteList notes={data.notes} />
+      {notes.length === 0 ? (
+        <p>No notes found.</p>
+      ) : (
+        <>
+          
+          <NoteList notes={notes} />
+          {totalPages > 1 && (
+  <div className={css.paginationWrap}>
+    <Pagination
+      totalPages={totalPages}
+      currentPage={page}
+      onPageChange={(p) => setPage(p)}
+    />
+  </div>
+)}
+        </>
+      )}
 
-     
-      <Pagination
-        totalPages={data.totalPages}
-        currentPage={page}
-        onPageChange={handlePageChange}
-      />
+      
+      <Modal open={isCreateOpen} onClose={() => setCreateOpen(false)}>
+        <NoteForm
+          onSuccess={(payload) => create.mutate(payload)}
+          onCancel={() => setCreateOpen(false)}
+          isSubmitting={create.isPending}
+          errorMsg={
+            create.isError
+              ? ((create.error as Error)?.message ?? "Failed to create note")
+              : undefined
+          }
+        />
+      </Modal>
     </div>
   );
 }

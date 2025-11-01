@@ -1,40 +1,26 @@
-import css from "./NotePreview.module.css";
 import type { Note } from "@/types/note";
+import css from "./NotePreview.module.css";
 
 interface NotePreviewProps {
-  note: Note;
+  note: Note | null;
+  onBack: () => void;
 }
 
-export default function NotePreview({ note }: NotePreviewProps) {
-  if (!note) {
-    return <p className={css.error}>Note not found.</p>;
-  }
+export default function NotePreview({ note, onBack }: NotePreviewProps) {
+  if (!note) return <p>Note not found.</p>;
 
   return (
-    <div className={css.container}>
+    <div className={css.preview}>
+      <button onClick={onBack} className={css.backBtn}>
+        ← Back
+      </button>
+
       <h2 className={css.title}>{note.title}</h2>
-
-      {note.tags && note.tags.length > 0 && (
-        <ul className={css.tagsList}>
-          {note.tags.map((tag) => (
-            <li key={tag} className={css.tagItem}>
-              {tag}
-            </li>
-          ))}
-        </ul>
-      )}
-
       <p className={css.content}>{note.content}</p>
 
-      <div className={css.footer}>
-        <p className={css.date}>
-          Created: {new Date(note.createdAt).toLocaleString()}
-        </p>
-        {note.updatedAt && (
-          <p className={css.date}>
-            Updated: {new Date(note.updatedAt).toLocaleString()}
-          </p>
-        )}
+      <div className={css.meta}>
+        <small>Created: {new Date(note.createdAt).toLocaleString()}</small>
+        <small>Updated: {new Date(note.updatedAt).toLocaleString()}</small>
       </div>
     </div>
   );

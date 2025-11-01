@@ -1,31 +1,43 @@
-import { QueryClient, dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
+import { notFound } from "next/navigation";
 import { fetchNotes } from "@/lib/api";
-import NotesClient from "@/app/notes/Notes.client";
-import layoutCss from "../LayoutNotes.module.css";
+import NotesClient from "./Notes.client";
 
-type Params = { slug?: string[] };
+const VALID_TAGS = ["All", "Work", "Personal", "Todo", "Meeting", "Shopping"];
 
-function getTagFromSlug(slugArr?: string[]): string | undefined {
-  if (!slugArr || slugArr.length === 0) return "all";
-  return decodeURIComponent(slugArr[0]);
-}
+export default async function FilterPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string[] }>; 
+  searchParams: Promise<{ q?: string; page?: string }>;
+}) {
+  const { slug } = await params;
+  const sp = await searchParams;
 
-export default async function NotesFilterPage({ params }: { params: Promise<Params> }) {
-  const resolvedParams = await params; 
-  const tag = getTagFromSlug(resolvedParams.slug);
+  const tagRaw = slug[0] ?? "All"; 
+  if (!VALID_TAGS.includes(tagRaw)) {
+    notFound();
+  }
 
-  const queryClient = new QueryClient();
+  const tag = tagRaw === "All" ? undefined : tagRaw;
+  const q = typeof sp?.q === "string" ? sp.q : "";
+  const page = sp?.page ? Number(sp.page) : 1;
 
-  await queryClient.prefetchQuery({
-    queryKey: ["notes", { page: 1, search: "", tag }],
-    queryFn: () => fetchNotes({ page: 1, search: "", tag }),
+  const qc = new QueryClient();
+  await qc.prefetchQuery({
+    queryKey: ["notes", { q, page, tag: tag ?? "" }],
+    queryFn: () => fetchNotes({ q, page, tag }),
   });
 
   return (
-    <div className={layoutCss.notesWrapper}>
-      <HydrationBoundary state={dehydrate(queryClient)}>
-        <NotesClient />
-      </HydrationBoundary>
-    </div>
+    <HydrationBoundary state={dehydrate(qc)}>
+      
+      <NotesClient tag={tag ?? null} />
+    </HydrationBoundary>
   );
 }
