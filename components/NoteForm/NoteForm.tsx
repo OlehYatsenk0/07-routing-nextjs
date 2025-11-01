@@ -3,13 +3,15 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createNote } from '@/lib/api';
+import type { CreateNotePayload } from "@/lib/api";
 import type { CreateNoteDto, NoteTag } from '@/types/note';
 import css from './NoteForm.module.css';
 
 interface NoteFormProps {
-  onCancel?: () => void;
-  onSuccess?: () => void;
+  onSuccess: (payload: CreateNotePayload) => void;
+  onCancel: () => void;
+  isSubmitting: boolean;
+  errorMsg?: string;
 }
 
 const TAG_OPTIONS: NoteTag[] = ['Todo', 'Work', 'Personal', 'Meeting', 'Shopping'];
