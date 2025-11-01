@@ -1,12 +1,11 @@
-'use client';
+import Link from "next/link";
+import TagsMenu from "@/components/TagsMenu/TagsMenu";
+import css from "./Header.module.css";
 
-import Link from 'next/link';
-import css from './Header.module.css';
-
-export function Header() {
+export default function Header() {
   return (
     <header className={css.header}>
-      <Link href="/" className={css.headerLink} aria-label="Home">
+      <Link href="/" aria-label="Home" className={css.headerLink}>
         NoteHub
       </Link>
 
@@ -18,9 +17,7 @@ export function Header() {
             </Link>
           </li>
           <li className={css.navigationItem}>
-            <Link href="/notes/filter/all" className={css.navigationLink}>
-              Notes
-            </Link>
+            <TagsMenu />
           </li>
         </ul>
       </nav>
