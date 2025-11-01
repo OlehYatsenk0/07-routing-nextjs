@@ -18,11 +18,18 @@ export default function NotesClient({ tag }: { tag?: string }) {
   const search = searchParams.get("search") ?? "";
 
   
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", String(newPage));
+    router.push(`?${params.toString()}`);
+  };
+
+  
   const handleSearch = (query: string) => {
     const params = new URLSearchParams(searchParams);
     if (query) params.set("search", query);
     else params.delete("search");
-    params.set("page", "1"); 
+    params.set("page", "1");
     router.push(`?${params.toString()}`);
   };
 
@@ -43,13 +50,18 @@ export default function NotesClient({ tag }: { tag?: string }) {
   return (
     <div className={css.wrapper}>
       <div className={css.topRow}>
-        
         <SearchBox onSearch={handleSearch} />
         <CreateNote />
       </div>
 
       <NoteList notes={data.notes} />
-      <Pagination totalPages={data.totalPages} />
+
+     
+      <Pagination
+        totalPages={data.totalPages}
+        currentPage={page}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 }
