@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { fetchNotes } from "@/lib/api";
 import NoteList from "@/components/NoteList/NoteList";
@@ -10,10 +10,23 @@ import CreateNote from "@/components/CreateNote/CreateNote";
 import css from "./Notes.module.css";
 
 export default function NotesClient({ tag }: { tag?: string }) {
+  const router = useRouter();
   const searchParams = useSearchParams();
+
+  
   const page = Number(searchParams.get("page") ?? 1);
   const search = searchParams.get("search") ?? "";
 
+  
+  const handleSearch = (query: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (query) params.set("search", query);
+    else params.delete("search");
+    params.set("page", "1"); 
+    router.push(`?${params.toString()}`);
+  };
+
+  
   const {
     data,
     isLoading,
@@ -30,9 +43,11 @@ export default function NotesClient({ tag }: { tag?: string }) {
   return (
     <div className={css.wrapper}>
       <div className={css.topRow}>
-        <SearchBox />
+        
+        <SearchBox onSearch={handleSearch} />
         <CreateNote />
       </div>
+
       <NoteList notes={data.notes} />
       <Pagination totalPages={data.totalPages} />
     </div>
