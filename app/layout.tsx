@@ -9,7 +9,13 @@ export const metadata = {
   description: "Manage your personal notes efficiently",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+  modal,
+}: {
+  children: ReactNode;
+  modal: ReactNode;
+}) {
   return (
     <html lang="en">
       <body>
@@ -23,7 +29,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             }}
           >
             <Header />
-            <main style={{ flex: 1 }}>{children}</main>
+            <main style={{ flex: 1, position: "relative" }}>
+              {children}
+              {modal}
+            </main>
             <Footer />
           </div>
         </TanStackProvider>
