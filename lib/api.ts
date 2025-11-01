@@ -1,53 +1,47 @@
 import axios, { AxiosInstance } from "axios";
-import type { Note, CreateNoteDto } from "@/types/note";
-
+import type { Note } from "@/types/note";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "https://notehub-public.goit.study/api";
-const TOKEN = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
-
+const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
 
 const instance: AxiosInstance = axios.create({
   baseURL: API_URL,
   headers: {
-    ...(TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {}), 
+    Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
   },
 });
 
 
-export interface FetchNotesParams {
-  page: number;
-  search?: string;
-  perPage?: number;
-  tag?: string;
-}
-
-export interface NotesListResponse {
+export interface PaginatedNotesResponse {
   notes: Note[];
   totalPages: number;
 }
 
 
-export async function fetchNotes({
-  page,
-  search = "",
-  perPage = 8,
-  tag,
-}: FetchNotesParams): Promise<NotesListResponse> {
-  const params = new URLSearchParams();
-  params.set("page", String(page));
-  params.set("perPage", String(perPage));
+export type CreateNotePayload = Pick<Note, "title" | "content" | "tag">;
 
-  if (search.trim()) params.set("search", search.trim());
 
-  if (tag && tag !== "All") {
-    const normalizedTag =
-      tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase();
-    params.set("tag", normalizedTag);
-  }
+export interface NotesQueryParams {
+  q?: string;
+  page?: number;
+  tag?: string;
+}
 
-  const { data } = await instance.get(`/notes?${params.toString()}`);
+
+export async function fetchNotes(
+  params: NotesQueryParams = {}
+): Promise<PaginatedNotesResponse> {
+  const { q, page = 1, tag } = params;
+
+  const queryParams = new URLSearchParams();
+  queryParams.set("page", String(page));
+  queryParams.set("perPage", "8");
+  if (q?.trim()) queryParams.set("search", q.trim());
+  if (tag && tag !== "All") queryParams.set("tag", tag);
+
+  const { data } = await instance.get(`/notes?${queryParams.toString()}`);
   return data;
 }
 
@@ -58,8 +52,8 @@ export async function fetchNoteById(id: string): Promise<Note> {
 }
 
 
-export async function createNote(dto: CreateNoteDto): Promise<Note> {
-  const { data } = await instance.post("/notes", dto);
+export async function createNote(payload: CreateNotePayload): Promise<Note> {
+  const { data } = await instance.post("/notes", payload);
   return data;
 }
 
