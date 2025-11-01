@@ -39,12 +39,12 @@ export default function NoteForm({ onCancel, onSuccess }: NoteFormProps) {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-  mutationFn: (dto: CreateNotePayload) => createNote(dto),
-  onSuccess: async (dto) => {
-    await queryClient.invalidateQueries({ queryKey: ["notes"] });
-    onSuccess?.(dto);
-  },
-});
+    mutationFn: (dto: CreateNotePayload) => createNote(dto),
+    onSuccess: async (_, variables) => {
+      await queryClient.invalidateQueries({ queryKey: ["notes"] });
+      onSuccess?.(variables);
+    },
+  });
 
   return (
     <Formik
@@ -52,10 +52,10 @@ export default function NoteForm({ onCancel, onSuccess }: NoteFormProps) {
       validationSchema={Schema}
       onSubmit={(values, { resetForm }) => {
         const payload: CreateNoteDto = {
-  title: values.title,
-  content: values.content,
-  tag: values.tag as NoteTag,
-};
+          title: values.title,
+          content: values.content,
+          tag: values.tag as NoteTag,
+        };
         mutation.mutate(payload, {
           onSuccess: () => {
             resetForm();
