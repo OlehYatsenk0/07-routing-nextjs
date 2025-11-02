@@ -24,8 +24,8 @@ export default function NoteList({
     isError,
     error,
   } = useMutation({
-    
     mutationFn: (id: string | number) => deleteNote(String(id)),
+
     
     onMutate: async (id: string | number) => {
       await qc.cancelQueries({ queryKey: ["notes"] });
@@ -44,6 +44,7 @@ export default function NoteList({
 
       return { prev };
     },
+
     
     onError: (_err, _id, ctx) => {
       if (!ctx?.prev) return;
@@ -51,13 +52,14 @@ export default function NoteList({
         qc.setQueryData(key, data);
       });
     },
+
     
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ["notes"] });
     },
   });
 
-  if (!notes?.length) return null;
+  if (!notes?.length) return <p>No notes found.</p>;
 
   return (
     <ul className={css.list}>
@@ -70,9 +72,18 @@ export default function NoteList({
             <p className={css.content}>{n.content}</p>
 
             <div className={css.footer}>
-              <span className={css.tag} title={n.tag}>
-                {n.tag}
-              </span>
+              
+              <div className={css.tagsContainer}>
+                {n.tags?.length > 0 ? (
+                  n.tags.map((t) => (
+                    <span key={t} className={css.tag} title={t}>
+                      {t}
+                    </span>
+                  ))
+                ) : (
+                  <span className={css.tag}>No tag</span>
+                )}
+              </div>
 
               <div style={{ display: "flex", gap: 8 }}>
                 <Link className={css.link} href={`/notes/${n.id}`}>
