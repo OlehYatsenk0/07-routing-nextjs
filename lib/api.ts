@@ -39,7 +39,10 @@ export async function fetchNotes(
   queryParams.set("page", String(page));
   queryParams.set("perPage", "8");
   if (q?.trim()) queryParams.set("search", q.trim());
-  if (tag && tag !== "All") queryParams.set("tag", tag);
+  if (tag && tag !== "all") {
+  const capitalizedTag = tag.charAt(0).toUpperCase() + tag.slice(1);
+  queryParams.set("tag", capitalizedTag);
+}
 
   const { data } = await instance.get(`/notes?${queryParams.toString()}`);
   return data;
@@ -58,6 +61,7 @@ export async function createNote(payload: CreateNotePayload): Promise<Note> {
 }
 
 
-export async function deleteNote(id: string): Promise<void> {
-  await instance.delete(`/notes/${id}`);
+export async function deleteNote(id: string): Promise<Note> {
+  const { data } = await instance.delete<Note>(`/notes/${id}`);
+  return data;
 }

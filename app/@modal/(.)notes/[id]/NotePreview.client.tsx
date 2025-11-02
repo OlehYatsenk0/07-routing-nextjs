@@ -10,19 +10,37 @@ import NotePreview from "@/components/NotePreview/NotePreview";
 export default function NotePreviewClient({ id }: { id: string }) {
   const router = useRouter();
 
-  const { data, isLoading, isError } = useQuery<Note>({
+  const { data, isLoading, isError, error } = useQuery<Note>({
     queryKey: ["note", id],
     queryFn: () => fetchNoteById(id),
+    refetchOnMount: false, 
   });
 
   return (
     <Modal open onClose={() => router.back()}>
       {isLoading ? (
         <p style={{ padding: 16 }}>Loading, please wait...</p>
-      ) : isError || !data ? (
-        <p style={{ padding: 16, color: "#b91c1c" }}>Failed to load note.</p>
+      ) : isError ? (
+        <div style={{ padding: 16 }}>
+          <button
+            onClick={() => router.back()}
+            style={{
+              background: "transparent",
+              border: "none",
+              textDecoration: "underline",
+              cursor: "pointer",
+              marginBottom: 8,
+            }}
+            aria-label="Close"
+          >
+            ← Back
+          </button>
+          <p style={{ color: "#b91c1c" }}>
+            {(error as Error)?.message ?? "Failed to load note"}
+          </p>
+        </div>
       ) : (
-        <NotePreview note={data} onBack={() => router.back()} />
+        <NotePreview note={data ?? null} onBack={() => router.back()} />
       )}
     </Modal>
   );

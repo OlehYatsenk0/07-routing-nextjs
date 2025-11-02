@@ -47,9 +47,10 @@ export default function TagsMenu() {
       {open && (
         <ul className={css.menuList} role="menu" aria-label="Filter by tag">
           {TAGS.map((tag) => {
-            
             const href =
-              tag === "All" ? "/notes/filter/All" : `/notes/filter/${tag}`;
+              tag === "All"
+                ? "/notes/filter/all"
+                : `/notes/filter/${tag.toLowerCase()}`;
 
             return (
               <li key={tag} className={css.menuItem} role="none">
