@@ -5,7 +5,7 @@ import css from "./Header.module.css";
 export default function Header() {
   return (
     <header className={css.header}>
-      <Link href="/" aria-label="Home" className={css.headerLink}>
+      <Link href="/notes/filter/all" aria-label="Home" className={css.headerLink}>
         NoteHub
       </Link>
 
