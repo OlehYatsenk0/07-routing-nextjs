@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from "axios";
-import type { Note } from "@/types/note";
+import type { Note, CreateNoteDto } from "@/types/note";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "https://notehub-public.goit.study/api";
@@ -20,14 +20,14 @@ export interface PaginatedNotesResponse {
 }
 
 
-export type CreateNotePayload = Pick<Note, "title" | "content" | "tag">;
-
-
 export interface NotesQueryParams {
   q?: string;
   page?: number;
-  tag?: string;
+  tag?: string; 
 }
+
+
+export type CreateNotePayload = CreateNoteDto;
 
 
 export async function fetchNotes(
