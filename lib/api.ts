@@ -1,6 +1,7 @@
 import axios from "axios";
 import type { AxiosInstance, AxiosResponse } from "axios";
 import type { Note, CreateNoteDto } from "@/types/note";
+export type CreateNotePayload = CreateNoteDto;
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "https://notehub-public.goit.study/api";
