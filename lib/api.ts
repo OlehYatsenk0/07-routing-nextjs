@@ -1,4 +1,5 @@
-import axios, { AxiosInstance } from "axios";
+import axios from "axios";
+import type { AxiosInstance, AxiosResponse } from "axios";
 import type { Note, CreateNoteDto } from "@/types/note";
 
 const API_URL =
@@ -13,22 +14,16 @@ const instance: AxiosInstance = axios.create({
   },
 });
 
-
 export interface PaginatedNotesResponse {
   notes: Note[];
   totalPages: number;
 }
 
-
 export interface NotesQueryParams {
   q?: string;
   page?: number;
-  tag?: string; 
+  tag?: string;
 }
-
-
-export type CreateNotePayload = CreateNoteDto;
-
 
 export async function fetchNotes(
   params: NotesQueryParams = {}
@@ -40,26 +35,30 @@ export async function fetchNotes(
   queryParams.set("perPage", "8");
   if (q?.trim()) queryParams.set("search", q.trim());
   if (tag && tag !== "all") {
-  const capitalizedTag = tag.charAt(0).toUpperCase() + tag.slice(1);
-  queryParams.set("tag", capitalizedTag);
-}
+    const capitalizedTag = tag.charAt(0).toUpperCase() + tag.slice(1);
+    queryParams.set("tag", capitalizedTag);
+  }
 
-  const { data } = await instance.get(`/notes?${queryParams.toString()}`);
+  const { data } = await instance.get<PaginatedNotesResponse>(
+    `/notes?${queryParams.toString()}`
+  );
   return data;
 }
 
 export async function fetchNoteById(id: string): Promise<Note> {
-  const { data } = await instance.get(`/notes/${id}`);
+  const { data } = await instance.get<Note>(`/notes/${id}`);
   return data;
 }
 
-export async function createNote(payload: CreateNotePayload): Promise<Note> {
-  const { data } = await instance.post("/notes", payload);
+export async function createNote(payload: CreateNoteDto): Promise<Note> {
+  const { data } = await instance.post<
+    Note,
+    AxiosResponse<Note>,
+    CreateNoteDto
+  >("/notes", payload);
   return data;
 }
 
-
-export async function deleteNote(id: string): Promise<Note> {
-  const { data } = await instance.delete<Note>(`/notes/${id}`);
-  return data;
+export async function deleteNote(id: string): Promise<void> {
+  await instance.delete<void>(`/notes/${id}`);
 }
