@@ -48,12 +48,10 @@ export async function fetchNotes(
   return data;
 }
 
-
 export async function fetchNoteById(id: string): Promise<Note> {
   const { data } = await instance.get(`/notes/${id}`);
   return data;
 }
-
 
 export async function createNote(payload: CreateNotePayload): Promise<Note> {
   const { data } = await instance.post("/notes", payload);
