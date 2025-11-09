@@ -60,6 +60,7 @@ export async function createNote(payload: CreateNoteDto): Promise<Note> {
   return data;
 }
 
-export async function deleteNote(id: string): Promise<void> {
-  await instance.delete<void>(`/notes/${id}`);
-}
+export const deleteNote = async (id: string): Promise<Note> => {
+  const { data } = await instance.delete<Note>(`/notes/${id}`);
+  return data;
+};

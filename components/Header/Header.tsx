@@ -19,8 +19,15 @@ export default function Header() {
             </Link>
           </li>
 
-          {/* Пряме посилання або меню для /notes/filter/all */}
           <li className={css.navigationItem}>
+            {/* ✅ Додано пряме посилання на /notes/filter/all */}
+            <Link href="/notes/filter/all" className={css.navigationLink}>
+              All notes
+            </Link>
+          </li>
+
+          <li className={css.navigationItem}>
+            {/* Додатково залишено TagsMenu, якщо потрібно */}
             <TagsMenu />
           </li>
         </ul>
